@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html>
+<head>
+<script>
+   const MAX_NUM_PIXELS = 60;
+   const RIGHT_ANGLE_SIDE_LEN = 10;
+   const ROW_LETTERS = ["A","B","C","D","E","F"];
+   
+   // assign defaults
+   var v1 = {name: 'v1', x: 0, y: 10 };
+   var v2 = {name: 'v2', x: 0, y: 0 };
+   var v3 = {name: 'v3', x: 10, y: 0 };
+   var selectedTriangleType = 'bottom';
+
+   window.onload = function() {
+      // set the field defaults to triangle A1
+      document.getElementById("v1x").value = v1.x;
+	  document.getElementById("v1y").value = v1.y;
+	  document.getElementById("v2x").value = v2.x;
+	  document.getElementById("v2y").value = v2.y;
+	  document.getElementById("v3x").value = v3.x;
+	  document.getElementById("v3y").value = v3.y;
+   };
+   
+   function getTriangleName() {
+	  var rowName, colName;
+	  // force to the tens position...
+	  var x = Math.round(parseInt(document.getElementById("v1x").value) / 10) * 10;
+	  var y = Math.round(parseInt(document.getElementById("v1y").value) / 10) * 10;
+
+      if (getSelectedType() === 'bottom') {
+	    // alert if invalid coordinate
+	    if (isBottomCoordinateInvalid(x,y)) {
+		   window.alert("Coordinates are invalid for Bottom triangle");
+		   return;
+		}
+	    rowName = ROW_LETTERS[(y / RIGHT_ANGLE_SIDE_LEN) - 1];
+        colName = (2 * x / RIGHT_ANGLE_SIDE_LEN) + 1;
+	  }
+	  else {	//top
+	    // alert if invalid coordinate
+	    if (isTopCoordinateInvalid(x,y)) {
+		   window.alert("Coordinates are invalid for Top triangle");
+		   return;
+		}
+		rowName = y === 0 ? ROW_LETTERS[0] : ROW_LETTERS[y / RIGHT_ANGLE_SIDE_LEN];
+        colName = (2 * x / RIGHT_ANGLE_SIDE_LEN) 
+	  }  	  
+	  
+	  // update UI with the triangle name based on coordinates
+	  document.getElementById("TriangleName").innerHTML = rowName + colName;
+   }
+   
+   function isBottomCoordinateInvalid(x, y) {      
+	  return (x < 0 || x > (MAX_NUM_PIXELS - RIGHT_ANGLE_SIDE_LEN) || 
+	          y < RIGHT_ANGLE_SIDE_LEN || y > MAX_NUM_PIXELS);
+   }
+   
+   function isTopCoordinateInvalid(x, y) {
+	  // alert if invalid x range   
+ 	  return (x < RIGHT_ANGLE_SIDE_LEN || x > MAX_NUM_PIXELS || 
+	          y < 0 || y > (MAX_NUM_PIXELS - RIGHT_ANGLE_SIDE_LEN));
+   }  
+   
+   function getSelectedType() {
+      return document.querySelector('input[name="triType"]:checked').value;
+   }
+   
+   // Update other x values for a valid triangle
+   function updateSidesFromX(v1x) {      
+	  switch (getSelectedType()) {
+	     case 'bottom':
+	        document.getElementById("v2x").value = v1x;
+			document.getElementById("v3x").value = parseInt(v1x) + RIGHT_ANGLE_SIDE_LEN;
+		    break;
+		 case 'top':
+		    document.getElementById("v2x").value = parseInt(v1x) - RIGHT_ANGLE_SIDE_LEN;
+		    document.getElementById("v3x").value = v1x; 
+   		    break;
+		 default:
+		    // error
+ 	  }
+   }
+   
+   // Update other y values for a valid triangle
+   function updateSidesFromY(v1y) {        
+	  switch (getSelectedType()) {
+	     case 'bottom':
+	        document.getElementById("v2y").value = v1y - RIGHT_ANGLE_SIDE_LEN;
+			document.getElementById("v3y").value = parseInt(v1y);
+		    break;
+		 case 'top':		    
+		    document.getElementById("v2y").value = v1y; 
+			document.getElementById("v3y").value = parseInt(v1y) + RIGHT_ANGLE_SIDE_LEN;
+   		    break;
+		 default:
+		    // error
+ 	  }
+   }
+   
+   // set default values for selected triangle type
+   function triTypeChanged(selected) {
+      if (selected.value === 'bottom') {
+	     document.getElementById("v1x").value = 0;
+	     document.getElementById("v1y").value = 10;
+	  }
+	  else {
+	  	 document.getElementById("v1x").value = 10;
+	     document.getElementById("v1y").value = 0;
+	  }
+	  document.getElementById("v2x").value = 0;
+	  document.getElementById("v2y").value = 0;
+	  document.getElementById("v3x").value = 10;
+	  document.getElementById("v3y").value = 0;
+   }
+</script>
+
+</head>
+<body>
+
+<h2>Coding Question</h2>
+<hr/>
+
+<b>Assumptions:</b>
+<ol>
+<li>UI allows user to choose top/bottom triangle and the location of the right angle.</li>
+ <ul><li>If required to support 3 points, the 3 points would be converted to a type and location of the right angle.</li></ul>
+<li>Top left coordinate is 0,0 (increases by 10 pixels right and down)</li>
+<li>More validation is needed</li>
+<li>Unit tests would ensure edge cases</li>
+<li>Tested on latest Chrome browser</i></li>
+</ol>
+
+<hr/>
+<b>Simple UI to manage data entry (and support verification)</b>
+<br/>
+<br/>
+
+Choose triangle location:
+   <input type="radio" name="triType" value="bottom" checked="checked" onclick="triTypeChanged(this);"> Bottom
+   <input type="radio" name="triType" value="top" onclick="triTypeChanged(this);"> Top<br>
+ <br/>
+
+Set the coordinates of the right angle (in pixels):
+V1x: <input id="v1x" type="number" min="0" max="60" step="10" onchange='updateSidesFromX(this.value)'>
+V1y: <input id="v1y" type="number" min="0" max="60" step="10" onchange='updateSidesFromY(this.value)'>
+<br/>
+<br/>
+Here are the updated coordinates based on the location of the right angle:<br/>
+V2x: <input id="v2x" type="number" min="0" max="12" disabled="true">
+V2y: <input id="v2y" type="number" min="0" max="6" disabled="true">
+<br/>
+V3x: <input id="v3x" type="number" min="0" max="12" disabled="true">
+V3y: <input id="v3y" type="number" min="0" max="6" disabled="true">
+<br/>
+<br/>  
+<button type="button" onclick='getTriangleName()' style="margin-left:40px;">Get Triangle Name</button>
+<br/>
+<br/>
+
+Answer based on data entered:  <span id="TriangleName"><Answer></span>
+<br/>
+<br/>
+
+</body>
+</html>
